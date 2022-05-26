@@ -18,8 +18,8 @@ ntbs::ntbs(size_t _max)
     }
 }
 
-ntbs::ntbs(const char* source, ntbs::TYPE _type)
-    : type(_type)
+ntbs::ntbs(const char* source)
+    : type(CONST)
 {
     max = strlen(source) + 1;
     if(type == ALLOC) {

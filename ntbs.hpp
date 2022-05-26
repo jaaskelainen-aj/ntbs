@@ -12,7 +12,7 @@ public:
     enum TYPE { NONE, ALLOC, CONST };
 
     ntbs(size_t _max = 0);
-    ntbs(const char* src, TYPE type = CONST);
+    ntbs(const char* src);
     ntbs(char* src, size_t srclen, TYPE type);
     ntbs(const ntbs& orig);
 #ifdef _LIBCPP_STRING
