@@ -1,6 +1,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <stdexcept>
+#include <iostream>
 
 #include "ntbs.hpp"
 
@@ -18,8 +19,8 @@ ntbs::ntbs(size_t _max)
     }
 }
 
-ntbs::ntbs(const char* source)
-    : type(CONST)
+ntbs::ntbs(const char* source, TYPE tt)
+    : type(tt)
 {
     max = strlen(source) + 1;
     if(type == ALLOC) {
@@ -160,6 +161,48 @@ ntbs::addprint(const char* fmt, ...)
     }
     return bw;
 }
+
+void
+ntbs::trim(TRIM tt)
+{
+    using namespace std;
+    const char *wi, *ws = " \t\n\r";
+    if (!data.bytes[0])
+        return;
+    size_t sl = strlen(data.store);
+    if (tt == BOTH || tt == RIGHT) {
+        char* end = data.store + sl - 1;
+        do {
+            for (wi=ws; *wi; wi++) {
+                if (*end == *wi) break;   
+            }
+            if (*wi) {
+                *end = 0;
+                end--;
+                sl--;
+            }
+        } while (*wi && end >= data.store);
+        if (!data.store)
+            return;
+    }
+    if (tt == BOTH || tt == LEFT) {
+        char* beg = data.store;
+        do {
+            for (wi=ws; *wi; wi++) {
+                if (*beg == *wi) break;
+            }
+            if (*wi) {
+                beg++;
+                sl--;
+            }
+        } while (*wi && *beg);
+        if (*beg)
+            memmove(data.store, beg, sl+1);
+        else 
+            *data.store = 0;
+    }
+}
+
 // --------------------------------------------------------
 #ifdef NTBS_DEBUG
 void

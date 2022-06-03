@@ -8,6 +8,32 @@ using namespace std;
 #include "ntbs.hpp"
 #include "ntbs.cpp"
 
+bool trim()
+{
+	ntbs ts(50);
+
+	ts = "   zzz   ";
+	cout << ts.get() << '|';
+	ts.trim();
+	cout << ts.get()  << "|\n";
+
+	ts = "     ";
+	cout << ts.get() << '|';
+	ts.trim();
+	cout << ts.get()  << "|\n";
+
+	ts = "   zzz   ";
+	cout << ts.get() << '|';
+	ts.trim(ntbs::RIGHT);
+	cout << ts.get()  << "|\n";
+
+	ts = "   zzz   ";
+	cout << ts.get() << '|';
+	ts.trim(ntbs::LEFT);
+	cout << ts.get()  << "|\n";
+	return true;
+}
+
 int main(int argc, char const *argv[])
 {
 	NTBS(na, 20);
@@ -15,6 +41,9 @@ int main(int argc, char const *argv[])
 	ntbs nc;
 	ntbs nd("const value");
 	ntbs ne("const copy", ntbs::ALLOC);
+
+	if (trim())
+		return 0;
 
 	na.dump(cout);
 	nb.dump(cout);

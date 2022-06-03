@@ -10,9 +10,10 @@ class ntbs
 {
 public:
     enum TYPE { NONE, ALLOC, CONST };
+    enum TRIM { BOTH, LEFT, RIGHT };
 
     ntbs(size_t _max = 0);
-    ntbs(const char* src);
+    ntbs(const char* src, TYPE tt = CONST);
     ntbs(char* src, size_t srclen, TYPE type);
     ntbs(const ntbs& orig);
 #ifdef _LIBCPP_STRING
@@ -54,6 +55,8 @@ public:
     size_t len() const { 
         return std::strlen(data.store); 
     }
+
+    void trim(TRIM tt = ntbs::BOTH);
 
 #ifdef NTBS_DEBUG
     void dump(std::ostream&);
