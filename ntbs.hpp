@@ -37,6 +37,11 @@ public:
     void operator+=(const ntbs& source) {
         operator+=((const char*) source.data.store);
     }
+    bool operator==(const ntbs& target) {
+        return std::strcmp(data.store, target.data.store) ? false : true;
+    }
+    ntbs operator+(const ntbs& right);
+
     int sprint(const char* fmt, ...);
     int addprint(const char* fmt, ...);
 

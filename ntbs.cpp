@@ -5,9 +5,13 @@
 
 #include "ntbs.hpp"
 
+
 ntbs::ntbs(size_t _max)
     : max(_max)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::ntbs default - max %ld\n", max);
+#endif
     if (max == 0) {
         data.store = 0;
         type = NONE;
@@ -48,6 +52,9 @@ ntbs::ntbs(char* source, size_t srclen, ntbs::TYPE _type)
 
 ntbs::ntbs(const ntbs& orig)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::ntbs - copy constructor: %s\n", orig.data.store);
+#endif
     max = orig.max;
     if (max) {
         type = ALLOC;
@@ -87,6 +94,9 @@ void ntbs::realloc(size_t req_bytes)
 void
 ntbs::operator=(const char* source)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::operator=(const char*) %s\n", source);
+#endif
     size_t sl = strlen(source);
     if (type == CONST)
         max = 0; // Force allocation
@@ -97,6 +107,9 @@ ntbs::operator=(const char* source)
 void 
 ntbs::operator=(const ntbs& orig)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::operator=(const ntbs&) %s\n", orig.get());
+#endif
     max = orig.max;
     type = orig.type;
     if (type == ALLOC) {
@@ -114,6 +127,14 @@ ntbs::operator+=(const char* source)
     if (orig_len + sl >= max)
         realloc(orig_len + sl);
     strcpy(data.store + orig_len, source);
+}
+ntbs
+ntbs::operator+(const ntbs& right)
+{
+    ntbs cc(max + right.max + 1);
+    cc = *this;
+    cc += right;
+    return cc;
 }
 // --------------------------------------------------------
 int

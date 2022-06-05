@@ -7,43 +7,15 @@ using namespace std;
 #define NTBS_DEBUG
 #include "ntbs.hpp"
 #include "ntbs.cpp"
+#include "run_tests.cpp"
 
-bool trim()
-{
-	ntbs ts(50);
-
-	ts = "   zzz   ";
-	cout << ts.get() << '|';
-	ts.trim();
-	cout << ts.get()  << "|\n";
-
-	ts = "     ";
-	cout << ts.get() << '|';
-	ts.trim();
-	cout << ts.get()  << "|\n";
-
-	ts = "   zzz   ";
-	cout << ts.get() << '|';
-	ts.trim(ntbs::RIGHT);
-	cout << ts.get()  << "|\n";
-
-	ts = "   zzz   ";
-	cout << ts.get() << '|';
-	ts.trim(ntbs::LEFT);
-	cout << ts.get()  << "|\n";
-	return true;
-}
-
-int main(int argc, char const *argv[])
+bool constructor()
 {
 	NTBS(na, 20);
 	ntbs nb(20);
 	ntbs nc;
 	ntbs nd("const value");
 	ntbs ne("const copy", ntbs::ALLOC);
-
-	if (trim())
-		return 0;
 
 	na.dump(cout);
 	nb.dump(cout);
@@ -72,5 +44,52 @@ int main(int argc, char const *argv[])
 	nc.addprint(" %d is number of life.", 42);
 	nc.dump(cout);
 
-	return 0;
+	return true;
+}
+
+bool trim()
+{
+	ntbs ts(20);
+
+	ts = "   zzz   ";
+	cout << ts.get() << '|';
+	ts.trim();
+	cout << ts.get()  << "|\n";
+
+	ts = "     ";
+	cout << ts.get() << '|';
+	ts.trim();
+	cout << ts.get()  << "|\n";
+
+	ts = "   zzz   ";
+	cout << ts.get() << '|';
+	ts.trim(ntbs::RIGHT);
+	cout << ts.get()  << "|\n";
+
+	ts = "   zzz   ";
+	cout << ts.get() << '|';
+	ts.trim(ntbs::LEFT);
+	cout << ts.get()  << "|\n";
+
+	return true;
+}
+
+bool operators()
+{
+	NTBS(origin, 30);
+	origin = "Null Terminated Byte String";
+	ntbs final = origin + ntbs("s are cool");
+	cout << final.get() << '\n';
+	return true;
+}
+
+int main(int argc, char const *argv[])
+{
+	TestItem tests[] = {
+		{ &constructor, "Ntbs constructor tests"},
+		{ &trim,        "Trimming values" },
+		{ &operators,   "Operator tests"}
+	};
+
+	return run_tests(argc, argv, tests);
 }
