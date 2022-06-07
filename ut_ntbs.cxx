@@ -71,6 +71,11 @@ bool trim()
 	ts.trim(ntbs::LEFT);
 	cout << ts.get()  << "|\n";
 
+	ts = "newline term\n";
+	cout << ts.get() << '|';
+	ts.trim(ntbs::RIGHT);
+	cout << ts.get()  << "|\n";
+
 	return true;
 }
 

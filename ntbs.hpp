@@ -24,6 +24,10 @@ public:
             delete[] data.store;
     }
     void realloc(size_t req_bytes);
+    void clear() {
+        if (max && type != CONST)
+            *data.store = 0;
+    }
 
     void operator=(char* src) { 
         *this = (const char*) src; 
@@ -37,7 +41,8 @@ public:
     void operator+=(const ntbs& source) {
         operator+=((const char*) source.data.store);
     }
-    bool operator==(const ntbs& target) {
+    void operator+=(char);
+    bool operator==(const ntbs& target) const {
         return std::strcmp(data.store, target.data.store) ? false : true;
     }
     ntbs operator+(const ntbs& right);
@@ -62,6 +67,7 @@ public:
     }
 
     void trim(TRIM tt = ntbs::BOTH);
+    uint64_t hash_fnv(uint64_t salt=0) const;
 
 #ifdef NTBS_DEBUG
     void dump(std::ostream&);
@@ -76,3 +82,11 @@ protected:
     size_t  max;
     TYPE    type;
 };
+
+namespace std {
+    template<> struct hash<ntbs> {
+        size_t operator() (const ntbs& target) const {
+            return (size_t) target.hash_fnv();
+        }
+    };
+}

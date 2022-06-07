@@ -128,6 +128,16 @@ ntbs::operator+=(const char* source)
         realloc(orig_len + sl);
     strcpy(data.store + orig_len, source);
 }
+void
+ntbs::operator+=(char ch)
+{
+    size_t slen = strlen(data.store);
+    if (slen + 2 >= max)
+        realloc(slen + 5);
+    data.store[slen] = ch;
+    data.store[slen+1] = 0;
+}
+
 ntbs
 ntbs::operator+(const ntbs& right)
 {
@@ -183,6 +193,7 @@ ntbs::addprint(const char* fmt, ...)
     return bw;
 }
 
+// NOTE: Trim function will not work properly if gcc optimization is -O2
 void
 ntbs::trim(TRIM tt)
 {
@@ -222,6 +233,24 @@ ntbs::trim(TRIM tt)
         else 
             *data.store = 0;
     }
+}
+
+// http://www.isthe.com/chongo/src/fnv/hash_64.c
+uint64_t
+ntbs::hash_fnv(uint64_t salt) const
+{
+    if (!max)
+        return 0;
+    uint64_t hash = salt;
+    size_t slen = strlen(data.store);
+
+    unsigned char* s = (unsigned char*) data.store;
+    while (slen) {
+        hash += (hash << 1) + (hash << 4) + (hash << 5) + (hash << 7) + (hash << 8) + (hash << 40);
+        hash ^= (uint64_t)*s++;
+        slen--;
+    }
+    return hash;
 }
 
 // --------------------------------------------------------
