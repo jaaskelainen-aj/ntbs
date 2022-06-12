@@ -10,9 +10,10 @@ class ntbs
 {
 public:
     enum TYPE { NONE, ALLOC, CONST };
+    enum TRIM { BOTH, LEFT, RIGHT };
 
     ntbs(size_t _max = 0);
-    ntbs(const char* src);
+    ntbs(const char* src, TYPE tt = CONST);
     ntbs(char* src, size_t srclen, TYPE type);
     ntbs(const ntbs& orig);
 #ifdef _LIBCPP_STRING
@@ -23,6 +24,10 @@ public:
             delete[] data.store;
     }
     void realloc(size_t req_bytes);
+    void clear() {
+        if (max && type != CONST)
+            *data.store = 0;
+    }
 
     void operator=(char* src) { 
         *this = (const char*) src; 
@@ -36,6 +41,12 @@ public:
     void operator+=(const ntbs& source) {
         operator+=((const char*) source.data.store);
     }
+    void operator+=(char);
+    bool operator==(const ntbs& target) const {
+        return std::strcmp(data.store, target.data.store) ? false : true;
+    }
+    ntbs operator+(const ntbs& right);
+
     int sprint(const char* fmt, ...);
     int addprint(const char* fmt, ...);
 
@@ -55,6 +66,9 @@ public:
         return std::strlen(data.store); 
     }
 
+    void trim(TRIM tt = ntbs::BOTH);
+    uint64_t hash_fnv(uint64_t salt=0) const;
+
 #ifdef NTBS_DEBUG
     void dump(std::ostream&);
 #endif
@@ -68,3 +82,11 @@ protected:
     size_t  max;
     TYPE    type;
 };
+
+namespace std {
+    template<> struct hash<ntbs> {
+        size_t operator() (const ntbs& target) const {
+            return (size_t) target.hash_fnv();
+        }
+    };
+}

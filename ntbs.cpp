@@ -1,12 +1,17 @@
 #include <cstdarg>
 #include <cstdio>
 #include <stdexcept>
+#include <iostream>
 
 #include "ntbs.hpp"
+
 
 ntbs::ntbs(size_t _max)
     : max(_max)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::ntbs default - max %ld\n", max);
+#endif
     if (max == 0) {
         data.store = 0;
         type = NONE;
@@ -18,8 +23,8 @@ ntbs::ntbs(size_t _max)
     }
 }
 
-ntbs::ntbs(const char* source)
-    : type(CONST)
+ntbs::ntbs(const char* source, TYPE tt)
+    : type(tt)
 {
     max = strlen(source) + 1;
     if(type == ALLOC) {
@@ -47,6 +52,9 @@ ntbs::ntbs(char* source, size_t srclen, ntbs::TYPE _type)
 
 ntbs::ntbs(const ntbs& orig)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::ntbs - copy constructor: %s\n", orig.data.store);
+#endif
     max = orig.max;
     if (max) {
         type = ALLOC;
@@ -86,6 +94,9 @@ void ntbs::realloc(size_t req_bytes)
 void
 ntbs::operator=(const char* source)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::operator=(const char*) %s\n", source);
+#endif
     size_t sl = strlen(source);
     if (type == CONST)
         max = 0; // Force allocation
@@ -96,6 +107,9 @@ ntbs::operator=(const char* source)
 void 
 ntbs::operator=(const ntbs& orig)
 {
+#ifdef NTBS_DEBUG
+    printf("ntbs::operator=(const ntbs&) %s\n", orig.get());
+#endif
     max = orig.max;
     type = orig.type;
     if (type == ALLOC) {
@@ -113,6 +127,24 @@ ntbs::operator+=(const char* source)
     if (orig_len + sl >= max)
         realloc(orig_len + sl);
     strcpy(data.store + orig_len, source);
+}
+void
+ntbs::operator+=(char ch)
+{
+    size_t slen = strlen(data.store);
+    if (slen + 2 >= max)
+        realloc(slen + 5);
+    data.store[slen] = ch;
+    data.store[slen+1] = 0;
+}
+
+ntbs
+ntbs::operator+(const ntbs& right)
+{
+    ntbs cc(max + right.max + 1);
+    cc = *this;
+    cc += right;
+    return cc;
 }
 // --------------------------------------------------------
 int
@@ -160,6 +192,67 @@ ntbs::addprint(const char* fmt, ...)
     }
     return bw;
 }
+
+// NOTE: Trim function will not work properly if gcc optimization is -O2
+void
+ntbs::trim(TRIM tt)
+{
+    using namespace std;
+    const char *wi, *ws = " \t\n\r";
+    if (!data.bytes[0])
+        return;
+    size_t sl = strlen(data.store);
+    if (tt == BOTH || tt == RIGHT) {
+        char* end = data.store + sl - 1;
+        do {
+            for (wi=ws; *wi; wi++) {
+                if (*end == *wi) break;   
+            }
+            if (*wi) {
+                *end = 0;
+                end--;
+                sl--;
+            }
+        } while (*wi && end >= data.store);
+        if (!data.store)
+            return;
+    }
+    if (tt == BOTH || tt == LEFT) {
+        char* beg = data.store;
+        do {
+            for (wi=ws; *wi; wi++) {
+                if (*beg == *wi) break;
+            }
+            if (*wi) {
+                beg++;
+                sl--;
+            }
+        } while (*wi && *beg);
+        if (*beg)
+            memmove(data.store, beg, sl+1);
+        else 
+            *data.store = 0;
+    }
+}
+
+// http://www.isthe.com/chongo/src/fnv/hash_64.c
+uint64_t
+ntbs::hash_fnv(uint64_t salt) const
+{
+    if (!max)
+        return 0;
+    uint64_t hash = salt;
+    size_t slen = strlen(data.store);
+
+    unsigned char* s = (unsigned char*) data.store;
+    while (slen) {
+        hash += (hash << 1) + (hash << 4) + (hash << 5) + (hash << 7) + (hash << 8) + (hash << 40);
+        hash ^= (uint64_t)*s++;
+        slen--;
+    }
+    return hash;
+}
+
 // --------------------------------------------------------
 #ifdef NTBS_DEBUG
 void
