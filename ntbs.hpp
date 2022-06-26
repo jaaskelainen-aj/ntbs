@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstring>
+#include <cstdint>
+#include <functional>
 
 #define NTBS(V,L)\
     char V ## _ntbs[L];\
@@ -18,6 +20,7 @@ public:
     ntbs(const ntbs& orig);
 #ifdef _LIBCPP_STRING
     ntbs(const std::string&);
+    void operator=(const std::string&);
 #endif    
     virtual ~ntbs() {
         if (type == ALLOC)
@@ -42,10 +45,29 @@ public:
         operator+=((const char*) source.data.store);
     }
     void operator+=(char);
+    ntbs operator+(const ntbs& right);
+
     bool operator==(const ntbs& target) const {
         return std::strcmp(data.store, target.data.store) ? false : true;
     }
-    ntbs operator+(const ntbs& right);
+    int compare(const ntbs& target) const {
+        return std::strcmp(data.store, target.data.store);
+    }
+    size_t find(int ch) const {
+        if (!max)
+            return SIZE_MAX;
+        const char* ndx = std::strchr(data.store, ch);
+        return ndx ? data.store - ndx : SIZE_MAX;
+    }
+    size_t find(const char* target) const {
+        if (!max || target == data.store)
+            return SIZE_MAX;
+        const char* ndx = std::strstr(data.store, target);
+        return ndx ? data.store - ndx : SIZE_MAX;
+    }
+    size_t find(const ntbs& target) const {
+        return find(target.data.store);
+    }
 
     int sprint(const char* fmt, ...);
     int addprint(const char* fmt, ...);

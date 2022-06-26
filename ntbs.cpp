@@ -74,6 +74,15 @@ ntbs::ntbs(const std::string& orig)
     data.store = new char[max];
     strcpy(data.store, orig.data());
 }
+void
+ntbs::operator=(const std::string& orig)
+{
+    // Force reallocation for const type
+    if (type == CONST)
+        max = 0;
+    realloc(orig.size());
+    strcpy(data.store, orig.c_str());
+}
 #endif
 // --------------------------------------------------------
 void ntbs::realloc(size_t req_bytes)
